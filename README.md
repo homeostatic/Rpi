@@ -40,6 +40,10 @@ Broadly speaking I followed the excellent guide by RowdyVoyeur:
    64 chunk size
 
    audio input doesn't always connect properly, recently the hacky workaround is to make sure the input is active when starting m8c?? 
+
+   another issue is that (since upgrading to M8 firmware 4.0?) the tracker doesn't seem to be exiting gracefully. State is not saved between power cycles.
+
+   the shutdown command is also apparently not working properly in m8c. It gets stuck on "closing audio devices"
    
 
 for MIDI over GPIO BLitz city DIY has made a very good tutorial on how to free the RX and TX pins and set them up to be the serial IO as well as some info about MIDI hardware:
