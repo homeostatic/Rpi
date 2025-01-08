@@ -8,11 +8,17 @@ This has been a long process with frequent and extended breaks. so I have probab
 The hardware setup is:
 
 teensy4.0                              -  M8 tracker Headless hardware
+
 adafruit ItsyBitsy 5v                  - Custom USB HID (keypad)
+
       this arduino board has a chip on it which lets it act as a plug and play "keyboard" which is maybe not really needed but makes it very simple to integrate into the setup.
+      
 USB Audio IO  (cheap junk from amazon)
+
 5-PIN DIN MIDI IO board                - with 6n138 optocoupler
+
 Momentary pushbutton                   - power switch
+
 Raspberry Pi 4
 
 
