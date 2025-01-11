@@ -37,7 +37,13 @@ Broadly speaking I followed the excellent guide by RowdyVoyeur:
           possibly could be improved by reducing script load on rpi4 or maybe overclocking slightly?
 
    m8c audio enabled
+   
+   44100 hz
+   
+   2 jack period
+   
    64 chunk size
+   
 
    audio input doesn't always connect properly, recently the hacky workaround is to make sure the input is active when starting m8c?? 
 
