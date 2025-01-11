@@ -60,6 +60,17 @@ for the serial to MIDI python scripts (maybe python is not the best solution but
 config of the power button:
   in /boot/config.txt
   ...
+
+
+  I have added a m8c.service to systemctl and now m8c will start on boot.
+      the service file took some optimising and there might be some stuff I forgot.
+      The environment user and path variables must match what can be seen from within home/patch/m8c-rpi4 
+            - printenv > envvar.env added at the start of the bash script was a useful thing here
+      the service is set to be real time priority and based on very breif testing 'CPUSchedulingPolicy = rr' is marginally better for audio quality than '...=fifo'
+
+      there is currently an issue with MIDI performance and reliability when running as a service. I haven't really tried fixing it yet, but the python scripts seem not to be happy.
+
+      
   
 
 
