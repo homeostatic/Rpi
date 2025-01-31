@@ -40,7 +40,7 @@ Broadly speaking I followed the excellent guide by RowdyVoyeur:
    
    44100 hz
    
-   2 jack period
+   2 jack period      // I increased this to {4,6} and audio quality impoved
    
    64 chunk size
    
@@ -49,7 +49,7 @@ Broadly speaking I followed the excellent guide by RowdyVoyeur:
 
    another issue is that (since upgrading to M8 firmware 4.0?) the tracker doesn't seem to be exiting gracefully. State is not saved between power cycles.
 
-   the shutdown command is also apparently not working properly in m8c. It gets stuck on "closing audio devices"
+   the shutdown command is also apparently not working properly in m8c. It gets stuck on "closing audio devices", if I make sure to close the script (with ctrl+c) in the terminal it seems to work properly
    
 
 for MIDI over GPIO BLitz city DIY has made a very good tutorial on how to free the RX and TX pins and set them up to be the serial IO as well as some info about MIDI hardware:
