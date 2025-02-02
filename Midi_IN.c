@@ -15,17 +15,18 @@ not yet tested on the rpi4
 
 #define SERIAL_PORT "/dev/serial0"
 #define BAUD_RATE B38400
-#define MIDI_PORT "hw:1,0,0"
+#define MIDI_PORT "hw:24,0,0"
 
 int serial_fd;
-snd_rawmidi_t *midi_out;
+snd_seq_t *seq_handle;
+int out_port;
 size_t message_length = 0;
 
 // Function to handle errors and clean up resources
 void error_exit(const char *message) {
     perror(message);
     if (serial_fd >= 0) close(serial_fd);
-    if (midi_out) snd_rawmidi_close(midi_out);
+    if (seq_handle) snd_seq_close(seq_handle);
     exit(EXIT_FAILURE);
 }
 
@@ -37,7 +38,7 @@ void configure_serial_port() {
         error_exit("Error opening serial port");
     }
 
-     // Clear the O_NONBLOCK flag, making I/O operations blocking
+    // Clear the O_NONBLOCK flag, making I/O operations blocking
     fcntl(serial_fd, F_SETFL, 0);
     // Get the current options for the port
     tcgetattr(serial_fd, &options);
@@ -67,20 +68,35 @@ void configure_serial_port() {
     tcsetattr(serial_fd, TCSANOW, &options);
 }
 
-// Function to configure the MIDI port
-void configure_midi_port() {
-    int status = snd_rawmidi_open(NULL, &midi_out, MIDI_PORT, 0);
+// Function to configure the ALSA sequencer
+void configure_sequencer() {
+    int status = snd_seq_open(&seq_handle, "default", SND_SEQ_OPEN_OUTPUT, 0);
     if (status < 0) {
-        error_exit("Error opening MIDI output");
+        error_exit("Error opening ALSA sequencer");
+    }
+
+    snd_seq_set_client_name(seq_handle, "GPIOMidi");
+    out_port = snd_seq_create_simple_port(seq_handle, "Output",
+                                          SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
+                                          SND_SEQ_PORT_TYPE_APPLICATION);
+    if (out_port < 0) {
+        error_exit("Error creating sequencer port");
     }
 }
 
-// Function to send a MIDI message
+// Function to send a MIDI message using SND_SEQ_EVENT_OSS
 void send_midi_message(unsigned char *message, size_t length) {
-    if (snd_rawmidi_write(midi_out, message, length) < 0) {
-        error_exit("Error sending MIDI message");
-    }
-    snd_rawmidi_drain(midi_out);
+    snd_seq_event_t ev;
+    snd_seq_ev_clear(&ev);
+    snd_seq_ev_set_source(&ev, out_port);
+    snd_seq_ev_set_subs(&ev);
+    snd_seq_ev_set_direct(&ev);
+    ev.type = SND_SEQ_EVENT_OSS;
+    ev.data.raw8.d[0] = message[0];
+    ev.data.raw8.d[1] = (length > 1) ? message[1] : 0;
+    ev.data.raw8.d[2] = (length > 2) ? message[2] : 0;
+    snd_seq_event_output_direct(seq_handle, &ev);
+    snd_seq_drain_output(seq_handle);
 }
 
 // Function to determine the length of a MIDI message based on the status byte
@@ -96,13 +112,11 @@ size_t get_message_length(unsigned char status_byte) {
 
 int main() {
     configure_serial_port();
-    configure_midi_port();
-
+    printf("Listening to %s ...\n", SERIAL_PORT);
+    configure_sequencer();
+    printf("Opened ALSA sequencer\n");
     unsigned char buffer[3];
     size_t buffer_index = 0;
-
-    printf("Listening to %s at %d baud...\n", SERIAL_PORT, BAUD_RATE);
-    printf("Opened MIDI output: %s\n", MIDI_PORT);
 
     while (1) {
         unsigned char byte;
@@ -129,7 +143,7 @@ int main() {
     }
 
     close(serial_fd);
-    snd_rawmidi_close(midi_out);
+    snd_seq_close(seq_handle);
     return 0;
 }
 
