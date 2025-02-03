@@ -57,6 +57,8 @@ for MIDI over GPIO BLitz city DIY has made a very good tutorial on how to free t
 
 for the serial to MIDI python scripts (maybe python is not the best solution but it seems to work) I use the py-serial Library and MIDO (which is based on the rt-midi backend)
 
+I have a working program writen in C which sends serial midi directly to the ALSA sequncer with the parse midi function from the alsa api. It is significantly faster and lighter.
+
 config of the power button:
   in /boot/config.txt
   ...
