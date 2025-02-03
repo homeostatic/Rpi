@@ -10,8 +10,8 @@ not yet tested on the rpi4
 #include <fcntl.h>
 #include <errno.h>
 #include <termios.h>
-#include <linux/serial.h>
 #include <alsa/asoundlib.h>
+#include <alsa/seq_midi_event.h>
 
 #define SERIAL_PORT "/dev/serial0"
 #define BAUD_RATE B38400
@@ -20,6 +20,7 @@ not yet tested on the rpi4
 int serial_fd;
 snd_seq_t *seq_handle;
 int out_port;
+snd_midi_event_t *midi_event_parser;
 size_t message_length = 0;
 
 // Function to handle errors and clean up resources
@@ -27,6 +28,7 @@ void error_exit(const char *message) {
     perror(message);
     if (serial_fd >= 0) close(serial_fd);
     if (seq_handle) snd_seq_close(seq_handle);
+    if (midi_event_parser) snd_midi_event_free(midi_event_parser);
     exit(EXIT_FAILURE);
 }
 
@@ -82,19 +84,30 @@ void configure_sequencer() {
     if (out_port < 0) {
         error_exit("Error creating sequencer port");
     }
+    // Connect to M8 alsa port (hw:24:0:0)
+    snd_seq_connect_to(seq_handle, out_port, 24, 0);
+
+    // Initialize the MIDI event parser
+    status = snd_midi_event_new(256, &midi_event_parser);
+    if (status < 0) {
+        error_exit("Error creating MIDI event parser");
+    }
 }
 
-// Function to send a MIDI message using SND_SEQ_EVENT_OSS
+// Function to send a MIDI message using snd_midi_event_encode
 void send_midi_message(unsigned char *message, size_t length) {
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);
     snd_seq_ev_set_source(&ev, out_port);
     snd_seq_ev_set_subs(&ev);
     snd_seq_ev_set_direct(&ev);
-    ev.type = SND_SEQ_EVENT_OSS;
-    ev.data.raw8.d[0] = message[0];
-    ev.data.raw8.d[1] = (length > 1) ? message[1] : 0;
-    ev.data.raw8.d[2] = (length > 2) ? message[2] : 0;
+
+    // Encode the MIDI bytes into an ALSA sequencer event
+    if (snd_midi_event_encode(midi_event_parser, message, length, &ev) < 0) {
+        fprintf(stderr, "Error encoding MIDI message\n");
+        return;
+    }
+
     snd_seq_event_output_direct(seq_handle, &ev);
     snd_seq_drain_output(seq_handle);
 }
@@ -144,6 +157,7 @@ int main() {
 
     close(serial_fd);
     snd_seq_close(seq_handle);
+    snd_midi_event_free(midi_event_parser);
     return 0;
 }
 
