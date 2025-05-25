@@ -28,7 +28,7 @@ Broadly speaking I followed the excellent guide by RowdyVoyeur:
   patchbox does seem be pretty good in terms of audio and midi latency.
     however I don't really understand the 'modules' and the one made by RowdyVoyeur to auto-start M8c on boot doesn't work for me.
 
-  I have edited the launch script to also start my midi_IN.py script as well as disabled a number of things that were specific to Rowdy's system.  
+  I have edited the launch script to also start my midi_IN script as well as disabled a number of things that were specific to Rowdy's system.  
   
   audio config that works reasonably well for me:
     I get occasonal crackle on my audio but I find it mostly pretty good.
