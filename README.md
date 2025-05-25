@@ -55,9 +55,9 @@ Broadly speaking I followed the excellent guide by RowdyVoyeur:
 for MIDI over GPIO BLitz city DIY has made a very good tutorial on how to free the RX and TX pins and set them up to be the serial IO as well as some info about MIDI hardware:
   https://www.youtube.com/watch?v=RbdNczYovHQ
 
-for the serial to MIDI python scripts (maybe python is not the best solution but it seems to work) I use the py-serial Library and MIDO (which is based on the rt-midi backend)
+the MIDI python scripts work but do not Perform especially well (latency and audio droppouts (I guess because of pythons overhead)
 
-I have a working program writen in C which sends serial midi directly to the ALSA sequncer with the parse midi function from the alsa api. It is significantly faster and lighter.
+added Midi program writen in C which sends serial midi directly to the ALSA sequncer with the parse midi function from the alsa api. It is significantly faster and lighter. currently it is hardwired to forward the RX pin to the M8 but it shouldn't be too hard to have it connect to it's own virtual Port.
 
 config of the power button:
   in /boot/config.txt
@@ -70,7 +70,6 @@ config of the power button:
             - printenv > envvar.env added at the start of the bash script was a useful thing here
       the service is set to be real time priority and based on very breif testing 'CPUSchedulingPolicy = rr' is marginally better for audio quality than '...=fifo'
 
-      there is currently an issue with MIDI performance and reliability when running as a service. I haven't really tried fixing it yet, but the python scripts seem not to be happy.
 
       
   
